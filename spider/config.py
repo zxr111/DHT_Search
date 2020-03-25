@@ -22,5 +22,16 @@ class Config(object):
     MAX_NODE_SIZE = int(os.environ.get('MAX_NODE_SIZE', '5000'))
 
 
+
+    # redis 地址
+    REDIS_HOST = "127.0.0.1"
+    # redis 端口
+    REDIS_PORT = 6379
+    # redis 密码
+    REDIS_PASSWORD = 123456
+    # redis 连接池最大连接量
+    REDIS_MAX_CONNECTION = 20
+
+
 if __name__ == "__main__":
     print(Config.MAX_NODE_SIZE)
