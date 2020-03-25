@@ -19,7 +19,8 @@ class DHTClient(DHTSender):
         self.nid = random_nid()
         # 双端队列，用来装扩散路由时返回的节点
         self.nodes = deque(maxlen=Config.MAX_NODE_SIZE)
-        # 守护线程
+        # 守护进程
+        self.setDaemon(True)
 
     #加入DHT网络，进行路由扩散
     def join_dht(self):

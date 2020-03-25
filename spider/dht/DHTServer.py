@@ -1,7 +1,7 @@
+import socket
 from asyncio import sleep
 from collections import deque
 
-from win32api import Sleep
 
 from .DHTClient import DHTClient
 from ..config import Config
@@ -18,7 +18,7 @@ class DHTServer(DHTClient):
         用于回复KRPC请求
     '''
     def __init__(self, bind_ip, bind_port, process_id):
-        DHTClient.__init__(self, Config.BIND_IP, Config.BIND_PORT)
+        DHTClient.__init__(self, bind_ip, bind_port)
         self.process_id = process_id
         # 绑定ip和port
         self.bind_ip = bind_ip
@@ -27,6 +27,7 @@ class DHTServer(DHTClient):
         self.nid = random_nid()
         # 双端队列，用来装扩散路由时返回的节点
         self.nodes = deque(maxlen=Config.MAX_NODE_SIZE)
+
 
     def run(self):
         # 初始化DHT网络
@@ -42,7 +43,6 @@ class DHTServer(DHTClient):
                 print(msg['r']['nodes'])
                 #回复收到的信息
                 self.on_message(msg, address)
-                self.auto_send_find_node()
             except Exception:
                 print('监听出错')
                 pass
@@ -90,7 +90,7 @@ class DHTServer(DHTClient):
                 print('取出node: {0}, {1}, {2}'.format(node.nid, node.ip, node.port))
                 address = (node.ip, node.port)
                 self.send_find_node(address, node.nid)
-            except KeyError:
+            except IndexError:
                 pass
             # 发送间隔
             sleep(1.0 / Config.MAX_NODE_SIZE)
