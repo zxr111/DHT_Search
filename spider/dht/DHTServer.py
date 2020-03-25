@@ -5,7 +5,7 @@ from collections import deque
 
 from .DHTClient import DHTClient
 from ..config import Config
-from ..util.common import random_nid
+from ..util.common import random_nid, get_neighbor
 from ..util import bcode
 from ..util.common import decode_nodes
 from .NODE import NODE
@@ -56,13 +56,16 @@ class DHTServer(DHTClient):
                 # 进行路由扩散
                if 'nodes' in msg['r']:
                     self.on_find_node_response(msg)
+            # 如果收到请求为quest
             elif msg['y'] == 'q':
-                if msg['y']['q'] == 'find_node':
+                try:
+                    if msg['y']['q'] == 'get_peers':
+                        self.on_get_peers_request(msg, address)
+                    elif msg['y']['q'] == 'announce_peer':
+                        print('收到announce_peer request')
+                except KeyError:
                     pass
-                elif msg['y']['q'] == 'get_peers':
-                    pass
-                elif msg['y']['q'] == 'announce_peer':
-                    pass
+
         except Exception:
             pass
 
@@ -90,9 +93,28 @@ class DHTServer(DHTClient):
                 print('取出node: {0}, {1}, {2}'.format(node.nid, node.ip, node.port))
                 address = (node.ip, node.port)
                 # 向取出的node请求寻找新的节点
-                self.send_find_node(address)
+                self.send_find_node(address, node.nid)
             except IndexError:
                 pass
             # 发送间隔
             sleep(1.0 / Config.MAX_NODE_SIZE)
 
+    # 处理get_peers请求函数
+    def on_get_peers_request(self, msg, address):
+        try:
+            h = msg['a']['info_hash']
+            print('收到get_peers request info_hash : {0}'.format(h))
+            tid = msg['t']
+            token = h[:2]
+            msg = {
+                't': tid,
+                'y': 'r',
+                'r': {
+                    'id': get_neighbor(h, self.nid),
+                    'nodes': '',
+                    'token': token
+                }
+            }
+            self.send_krpc(msg, address)
+        except KeyError:
+            pass

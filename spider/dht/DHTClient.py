@@ -38,16 +38,16 @@ class DHTClient(DHTSender):
         timer(Config.REJOIN_DHT_INTERVAL, self.rejoin_dht())
 
     # 模拟KRPC协议中的find_node请求模拟
-    def send_find_node(self, address):
+    def send_find_node(self, address, tar_nid=None):
         # 判断是进行路由扩散还是加入DHT
-        # nid = tar_nid if tar_nid else self.nid
+        nid = get_neighbor(tar_nid, self.nid) if tar_nid else self.nid
         # 随机生成长度为2的tid
         tid = ran_str(2)
         msg = {
             'tid': tid,
             'y': 'q',
             'q': 'find_node',
-            'id': self.nid,
+            'id': nid,
             'target': random_nid()
         }
         # 发送find_node krpc

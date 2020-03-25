@@ -13,8 +13,8 @@ LOG_LEVEL = logging.INFO
 
 def random_nid():
     hash = sha1()
-    # nid长度为20字节，40个16进制数
-    hash.update(ran_str(40).encode('utf-8'))
+    # nid长度为20字节
+    hash.update(ran_str(20).encode('utf-8'))
     return hash.digest()
 
 # 随机生成字符串
