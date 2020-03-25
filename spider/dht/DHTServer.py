@@ -1,5 +1,5 @@
 import socket
-from asyncio import sleep
+from time import sleep
 from collections import deque
 
 
@@ -89,7 +89,8 @@ class DHTServer(DHTClient):
                 node = self.nodes.popleft()
                 print('取出node: {0}, {1}, {2}'.format(node.nid, node.ip, node.port))
                 address = (node.ip, node.port)
-                self.send_find_node(address, node.nid)
+                # 向取出的node请求寻找新的节点
+                self.send_find_node(address)
             except IndexError:
                 pass
             # 发送间隔

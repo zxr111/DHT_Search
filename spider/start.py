@@ -8,7 +8,7 @@ logger = get_logger("logger_dht_main")
 
 # 启动多进程
 def start_processes(id):
-    logger.info("DHT网络进程 运行 成功 ! {0} ->>>> {1}:{2}".format(id, Config.BIND_IP, Config.BIND_PORT + id))
+    logger.info("DHT网络进程{0}运行成功 !!! 绑定地址 ------> {1}:{2}".format(id, Config.BIND_IP, Config.BIND_PORT + id))
     dht_server = DHTServer(Config.BIND_IP, Config.BIND_PORT + id, id)
     dht_server.start()
     dht_server.auto_send_find_node()

@@ -4,6 +4,7 @@ from random import randint
 
 # 随机生成nid
 from struct import unpack
+from threading import Timer
 
 from _socket import inet_ntoa
 
@@ -54,3 +55,6 @@ def get_logger(logger_name):
     )
     logger.addHandler(fh)
     return logger
+
+def timer(t, f):
+    Timer(t, f).start()
