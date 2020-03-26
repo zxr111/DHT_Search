@@ -5,11 +5,11 @@ from collections import deque
 
 from .DHTClient import DHTClient
 from ..config import Config
-from ..util.common import random_nid, get_neighbor
+from ..util.common import random_nid, get_neighbor, timer
 from ..util import bcode
 from ..util.common import decode_nodes
 from .NODE import NODE
-from ..database.Redis import RedisClient
+from ..database.Redis import RedisClient2
 
 
 # DHTServer 继承于 DHTClient类
@@ -30,12 +30,11 @@ class DHTServer(DHTClient):
         self.nodes = deque(maxlen=Config.MAX_NODE_SIZE)
         # 回复方法
         self.process_request_actions = {
-            'ping': self.on_ping_request,
             'get_peers': self.on_get_peers_request,
             'announce_peer': self.on_announce_peer_request,
-            'find_node': self.on_find_node_request
         }
-
+        # 定时器，定时重新加入DHT网络
+        timer(Config.REJOIN_DHT_INTERVAL, self.rejoin_dht)
 
     def run(self):
         # 初始化DHT网络
@@ -48,11 +47,9 @@ class DHTServer(DHTClient):
                 (data, address) = self.udp.recvfrom(65536)
                 msg = bcode.bdecode(data)
                 print('收到信息msg: {0} \n from address: {1}'.format(msg, address))
-                print(msg['r']['nodes'])
                 #回复收到的信息
                 self.on_message(msg, address)
             except Exception:
-                print('监听出错')
                 pass
 
     # 处理收到的KRPC请求
@@ -67,16 +64,7 @@ class DHTServer(DHTClient):
             # 如果收到请求为quest
             elif msg['y'] == 'q':
                 try:
-                    # if msg['y']['q'] == 'get_peers':
-                    #     self.on_get_peers_request(msg, address)
-                    # elif msg['y']['q'] == 'announce_peer':
-                    #     print('收到announce_peer request')
-                    # elif msg['y']['q'] == 'find_node':
-                    #     print('收到find_node request')
-                    # elif msg['y']['q'] == 'ping':
-                    #     print('收到ping request')
-                    #     self.ok(msg, address)
-                    self.process_request_actions[msg['y']['q']](msg, address)
+                    self.process_request_actions[msg['q']](msg, address)
                 except KeyError:
                     pass
 
@@ -86,50 +74,36 @@ class DHTServer(DHTClient):
     # 处理find_node的response
     def on_find_node_response(self, msg):
         for node in decode_nodes(msg['r']['nodes']):
-            (nid, ip, port) = node
-            if len(nid) != 20:
-                print('nid格式出错')
-                continue
-            if ip == self.bind_ip:
-                print('不能回复自身')
-                continue
-            n = NODE(nid, ip, port)
-            self.nodes.append(n)
-            # self.send_find_node(address, nid)
-            print('收到node: {0}'.format(str(node)))
-
-    def on_find_node_request(self, msg, address):
-        print('收到find_node request')
-
-    # 自动向双端队列中的节点发送find_node请求
-    def auto_send_find_node(self):
-        while True:
             try:
-                # 从双端队列中取出node
-                node = self.nodes.popleft()
-                print('取出node: {0}, {1}, {2}'.format(node.nid, node.ip, node.port))
-                address = (node.ip, node.port)
-                # 向取出的node请求寻找新的节点
-                self.send_find_node(address, node.nid)
-            except IndexError:
-                pass
-            # 发送间隔
-            sleep(1.0 / Config.MAX_NODE_SIZE)
+                (nid, ip, port) = node
+                if len(nid) != 20:
+                    print('nid格式出错')
+                    continue
+                if ip == self.bind_ip:
+                    print('不能回复自身')
+                    continue
+                n = NODE(nid, ip, port)
+                #self.Redis.add_node(node)
+                print('收到node :{0} 加入双端队列中'.format(node))
+                self.nodes.append(n)
+                RedisClient2.add_peer(nid, (ip, port))
+                # self.send_find_node(address, nid)
+            except KeyError:
+                print('存入节点出错')
+
 
     # 处理get_peers请求函数
     def on_get_peers_request(self, msg, address):
-        print('收到get_peers request')
+        print('收到get_peers request msg : {0}'.format(msg))
         try:
             h = msg['a']['info_hash']
-            print('收到get_peers request info_hash : {0}'.format(h))
             tid = msg['t']
             token = h[:2]
             msg = {
                 't': tid,
                 'y': 'r',
                 'r': {
-                    # 'id': get_neighbor(h, self.nid),
-                    'id': self.nid,
+                    'id': get_neighbor(h, self.nid),
                     'nodes': '',
                     'token': token
                 }
@@ -137,13 +111,23 @@ class DHTServer(DHTClient):
             self.send_krpc(msg, address)
         except KeyError:
             pass
-    # 处理ping请求
-    def on_ping_request(self, msg, address):
-        print('收到ping请求')
-        self.ok(msg, address)
 
+    #处理announce_peer请求
     def on_announce_peer_request(self, msg, address):
-        print('收到annoucne_peer request')
+        print('收到announce_peer request msg : {0}'.format(msg))
+        try:
+            h = msg['a']['info_hash']
+            token = msg['a']['token']
+            if h[:2] == token:
+                if 'implied_port ' in msg['a'] and msg['a']['implied_port '] != 0:
+                    port = address[1]
+                else:
+                    port = msg['a']['port']
+                #self.pool.submit(download_metadata, (address[0], port), h, self.process_id)
+        except Exception:
+            return
+        finally:
+            self.ok(msg, address)
 
     # 回复成功消息
     def ok(self, msg, address):

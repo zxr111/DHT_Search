@@ -3,7 +3,7 @@ import os
 
 class Config(object):
     # 是否使用全部进程
-    MAX_PROCESSES = 1# os.cpu_count() // 2 or os.cpu_count()
+    MAX_PROCESSES =  os.cpu_count() // 2 or os.cpu_count()
 
     # 初始化DHT网络节点
     BOOTSTRAP_NODES = (
@@ -17,7 +17,7 @@ class Config(object):
     # 绑定ip为默认路由
     BIND_IP = '0.0.0.0'
     # 绑定端口
-    BIND_PORT = 12248
+    BIND_PORT = 11158
     # 双端队列最大节点
     MAX_NODE_SIZE = int(os.environ.get('MAX_NODE_SIZE', '5000'))
 
