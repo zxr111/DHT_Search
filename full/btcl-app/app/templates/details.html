@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html class="h-100">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<title>{{ metadata._source.bare_name }} - BTCL</title>
+<!-- 自定义 CSS 文件 -->
+<link rel="stylesheet" href="{{ url_for('static',filename='static/css/index.css') }}">
+<!-- 新 Bootstrap4 核心 CSS 文件 -->
+<link rel="stylesheet" href="{{ url_for('static',filename='static/bootstrap/css/bootstrap.min.css') }}">
+<!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+<script src="{{ url_for('static',filename='static/js/clipboard.min.js') }}"></script>
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+<script src="{{ url_for('static',filename='static/js/jquery-3.3.1.slim.min.js') }}"></script>
+ <!-- popper.min.js 用于弹窗、提示、下拉菜单 -->
+<script src="{{ url_for('static',filename='static/bootstrap/js/popper-1.14.3.min.js') }}"></script>
+<!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+<script src="{{ url_for('static',filename='static/bootstrap/js/bootstrap.min.js') }}"></script>
+
+</head>
+
+<body class="d-flex flex-column h-100">
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light">
+    <a class="navbar-brand" href="/"><h4>BTCL</h4> </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">首页 <span class="sr-only">(current)</span></a>
+        </li>
+
+      </ul>
+    </div>
+  </nav>
+  <main role="main" class="flex-shrink-0">
+
+    <div style="display: none;" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+      复制磁力链接成功!
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    
+    <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-8">
+                    <h4 class="mt-3">{{ metadata._source.bare_name }}</h4>                   
+                    <p class="lead">文件大小 : {{metadata._source.file_size}}</p>
+                    <p class="lead">文件类型 : {{metadata._source.file_type}}</p>
+                    <p class="lead">文件数量 : {{metadata._source.file_num}}</p>
+                    <p class="lead">创建时间 : {{metadata._source.create_time}}</p>
+                    <p class="lead">热度 : {{metadata._version}}</p>
+                    <p class="lead">磁力链接 :
+                        <a href="javascript:void(0)"  class="badge badge-pill  badge-light copy btn">magnet:?xt=urn:btih:{{metadata._source.info_hash}}</a>
+                    </p>
+                    <p class="lead">文件列表 : </p>
+                    <ul>
+                        {% for filelist in metadata._source.file_list | eval %}
+                            <li>{{ filelist.n }} {{ filelist.l }}</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="#" class="badge badge-pill  badge-primary">{{metadata._source.create_time}}</a>
+                    <a href="#" class="badge badge-pill  badge-secondary">{{metadata._source.file_size}}</a>
+                    <a href="#" class="badge badge-pill  badge-success">{{metadata._source.file_num}}</a>
+                    <a href="#" class="badge badge-pill  badge-warning">{{metadata._source.file_type}}</a>
+                    <a href="#" class="badge badge-pill  badge-danger">{{metadata._version}}</a>
+
+                </div>
+            </div>
+       
+    </div>
+    
+  </main>
+
+</body>
+<script>
+{#  点击磁力链接复制磁力链接  #}
+$(function(){
+  $(".copy").on("click",function(){
+    data = $(".copy").text()
+    var clipboard = new ClipboardJS('.btn', {
+      text: function() {
+          return data;
+      }
+    });
+    clipboard.on('success', function (e) {
+      $(".alert").show()
+      setTimeout(function(){
+        $(".alert").hide()
+        e.clearSelection();
+        clipboard.destroy();
+      },2000)
+    });
+  })
+})
+
+</script>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html class="h-100">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="google-site-verification" content="HkqHZGz7K8E_R0hx9Flv_3a2QKHemGmN2CTLwFoSD3c" />
+<title>磁力链接搜索</title>
+<!-- 自定义 CSS 文件 -->
+<link rel="stylesheet" href="{{ url_for('static',filename='static/css/index.css') }}">
+<!-- 新 Bootstrap4 核心 CSS 文件 -->
+<link rel="stylesheet" href="{{ url_for('static',filename='static/bootstrap/css/bootstrap.min.css') }}">
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+<script src="{{ url_for('static',filename='static/js/jquery-3.3.1.slim.min.js') }}"></script>
+ <!-- popper.min.js 用于弹窗、提示、下拉菜单 -->
+<script src="{{ url_for('static',filename='static/bootstrap/js/popper-1.14.3.min.js') }}"></script>
+<!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+<script src="{{ url_for('static',filename='static/bootstrap/js/bootstrap.min.js') }}"></script>
+</head>
+
+<body class="d-flex flex-column h-100">
+  <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light">
+    <a class="navbar-brand" href="/"><h4>BTCL</h4> </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">首页 <span class="sr-only">(current)</span></a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <main role="main" class="flex-shrink-0">
+    <div class="jumbotron text-center">
+      <h1>磁力搜索</h1>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+          <div class="m-auto"> 
+            <form class="form-inline my-2 my-lg-0" onkeydown="if(event.keyCode==13)return false" action="#">
+              <input class="form-control mr-lg-0" type="search" id="value" placeholder="Search"  aria-label="Search">
+              <button class="btn btn-outline-success my-2 my-sm-0 subsearch" type="button">搜索</button>
+            </form> 
+          </div>
+        </div>
+      </div>
+    </main>
+<!-- <div class="text-center">
+</div> -->
+
+</body>
+<script>
+$(function(){
+  $(".subsearch").on("click",function(){
+    val = $("#value").val()
+    if (val == '') alert('搜索值不能为空')
+    else window.location.href="/search/"+val+"/1"
+  })
+})
+
+$(window).keydown(function(e){
+    var curKey = e.which; 
+    if(curKey == 13){
+      val = $("#value").val()
+      if (val == '') alert('搜索值不能为空')
+      else window.location.href="/search/"+val+"/1"
+    }
+})
+
+</script>
+</html>
